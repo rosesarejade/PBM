@@ -1,10 +1,17 @@
 # quizzie
 
-A new Flutter project.
+A Quiz App Flutter Project
 
-## Getting Started
+## _Is it taylor Swift or William Shakespeare_
 
-This project is a starting point for a Flutter application.
+In this simple quiz project application will be given 13 questions to classify whether the text is said by the Songwriter or the English Poet.
+
+The app will calculate total right and wrong answers with an alert box.
+
+![Overview of The Game](<Screenshot 2024-05-07 181246.png>)
+
+---
+Contribute and make your own further development!
 
 A few resources to get you started if this is your first Flutter project:
 
