@@ -2,6 +2,8 @@
 
 The Destiny Flutter App Project
 
+![Choose Your Destiy!](<Screenshot 2024-05-18 022720.png>)
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
