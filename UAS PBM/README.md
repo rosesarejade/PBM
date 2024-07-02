@@ -96,9 +96,7 @@ lib/
 For initial data management, this application is connected to a mock server to post and get the entered data.
 
 ![Login](image-2.png)
-
 ![Upload Child Data](image.png)
-
 ![Post Child Activity](image-1.png)
 
 Further development, build database using SQLite. The code is provided in the Providers folder, then run the application using a mobile emulator.
@@ -114,7 +112,7 @@ Further development, build database using SQLite. The code is provided in the Pr
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under this License - see the ([LICENSE](https://github.com/rosesarejade/PBM?tab=GPL-3.0-1-ov-file#)) file for details.
 
 ## Acknowledgments
 - Flutter Documentation
