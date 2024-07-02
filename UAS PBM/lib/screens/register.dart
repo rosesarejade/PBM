@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -57,11 +59,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon:
-                            const Icon(Icons.email, color: Colors.blueAccent),
+                        prefixIcon: const Icon(Icons.email, color: Colors.blueAccent),
                       ),
-                      validator: (val) =>
-                          val!.isEmpty ? 'Enter an email' : null,
+                      validator: (val) => val!.isEmpty ? 'Enter an email' : null,
                       onChanged: (val) {
                         setState(() => email = val);
                       },
@@ -75,11 +75,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon:
-                            const Icon(Icons.person, color: Colors.blueAccent),
+                        prefixIcon: const Icon(Icons.person, color: Colors.blueAccent),
                       ),
-                      validator: (val) =>
-                          val!.isEmpty ? 'Create a preferred username' : null,
+                      validator: (val) => val!.isEmpty ? 'Create a preferred username' : null,
                       onChanged: (val) {
                         setState(() => username = val);
                       },
@@ -90,21 +88,16 @@ class _RegisterPageState extends State<RegisterPage> {
                         hintText: 'Password',
                         suffix: InkWell(
                             onTap: _tooglePasswordView,
-                            child: Icon(_isHidden
-                                ? Icons.visibility
-                                : Icons.visibility_off)),
+                            child: Icon(_isHidden ? Icons.visibility : Icons.visibility_off)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon:
-                            const Icon(Icons.lock, color: Colors.blueAccent),
+                        prefixIcon: const Icon(Icons.lock, color: Colors.blueAccent),
                       ),
                       obscureText: _isHidden,
-                      validator: (val) => val!.length < 6
-                          ? 'Create a password with at least 6 characters'
-                          : null,
+                      validator: (val) => val!.length < 6 ? 'Create a password with at least 6 characters' : null,
                       onChanged: (val) {
                         setState(() => password = val);
                       },
@@ -118,17 +111,13 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon:
-                            const Icon(Icons.lock, color: Colors.blueAccent),
+                        prefixIcon: const Icon(Icons.lock, color: Colors.blueAccent),
                         suffix: InkWell(
                             onTap: _tooglePasswordView,
-                            child: Icon(_isHidden
-                                ? Icons.visibility
-                                : Icons.visibility_off)),
+                            child: Icon(_isHidden ? Icons.visibility : Icons.visibility_off)),
                       ),
                       obscureText: _isHidden,
-                      validator: (val) =>
-                          val != password ? 'password do not match' : null,
+                      validator: (val) => val != password ? 'password do not match' : null,
                       onChanged: (val) {
                         setState(() => confirmPassword = val);
                       },
@@ -137,8 +126,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 50, vertical: 15),
+                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -147,7 +135,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       child: const Text('Register'),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          Navigator.pop(context);
+                          _register(); // Panggil fungsi registrasi API
                         }
                       },
                     ),
@@ -179,5 +167,33 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() {
       _isHidden = !_isHidden;
     });
+  }
+
+  Future<void> _register() async {
+    final url = Uri.parse('https://e7e466ff1ba745979f91354c872c0f5e.api.mockbin.io/'); // Ganti dengan endpoint API Anda
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'username': username,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Jika registrasi berhasil
+      final responseData = jsonDecode(response.body);
+      print(responseData);
+      // Lakukan navigasi atau tindakan lain sesuai kebutuhan
+      Navigator.pop(context);
+    } else {
+      // Jika registrasi gagal
+      final errorData = jsonDecode(response.body);
+      print(errorData);
+      // Tampilkan pesan error atau lakukan tindakan lain sesuai kebutuhan
+    }
   }
 }

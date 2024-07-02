@@ -1,8 +1,8 @@
-import 'package:daycare_app/screens/login.dart';
 import 'package:flutter/material.dart';
-import 'package:getwidget/getwidget.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'home_parent.dart';
-import 'child_activities.dart'; // Import the ChildActivitiesPage
+// Import the ChildActivitiesPage
 
 class ChildInputPage extends StatefulWidget {
   const ChildInputPage({super.key});
@@ -17,7 +17,33 @@ class _ChildInputPageState extends State<ChildInputPage> {
   String age = '';
   String sex = '';
 
-  String dropdown = '';
+  Future<void> submitData() async {
+    final url = Uri.parse('https://e7e466ff1ba745979f91354c872c0f5e.api.mockbin.io/'); // Ganti dengan endpoint API Anda
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'name': name,
+        'age': age,
+        'sex': sex,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      // Jika server mengembalikan kode status 201 Created
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(),
+        ),
+      );
+    } else {
+      // Jika server tidak mengembalikan kode status 201
+      throw Exception('Failed to create child.');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +54,10 @@ class _ChildInputPageState extends State<ChildInputPage> {
           'Input Children Data',
           style: TextStyle(fontFamily: 'Piglet', fontSize: 30.0),
         ),
-        backgroundColor:
-            Colors.transparent, // Set app bar background to transparent
+        backgroundColor: Colors.transparent, // Set app bar background to transparent
         elevation: 0, // Remove app bar shadow
       ),
-      backgroundColor:
-          Colors.transparent, // Set scaffold background to transparent
+      backgroundColor: Colors.transparent, // Set scaffold background to transparent
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -51,11 +75,12 @@ class _ChildInputPageState extends State<ChildInputPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Container(
-                        margin: const EdgeInsets.only(top: 30),
-                        child: Image.asset(
-                          'images/iconroo.png',
-                          height: 135,
-                        )),
+                      margin: const EdgeInsets.only(top: 30),
+                      child: Image.asset(
+                        'images/iconroo.png',
+                        height: 135,
+                      ),
+                    ),
                     const SizedBox(height: 20.0),
                     const Text(
                       'Add My Child',
@@ -75,11 +100,9 @@ class _ChildInputPageState extends State<ChildInputPage> {
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon:
-                            const Icon(Icons.person, color: Colors.blueAccent),
+                        prefixIcon: const Icon(Icons.person, color: Colors.blueAccent),
                       ),
-                      validator: (val) =>
-                          val!.isEmpty ? 'Enter my child\'s name' : null,
+                      validator: (val) => val!.isEmpty ? 'Enter my child\'s name' : null,
                       onChanged: (val) {
                         setState(() => name = val);
                       },
@@ -93,8 +116,7 @@ class _ChildInputPageState extends State<ChildInputPage> {
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon: const Icon(Icons.transgender,
-                            color: Colors.blueAccent),
+                        prefixIcon: const Icon(Icons.transgender, color: Colors.blueAccent),
                       ),
                       validator: (val) => val!.isEmpty ? 'Girl/ Boy' : null,
                       onChanged: (val) {
@@ -110,11 +132,9 @@ class _ChildInputPageState extends State<ChildInputPage> {
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon:
-                            const Icon(Icons.cake, color: Colors.blueAccent),
+                        prefixIcon: const Icon(Icons.cake, color: Colors.blueAccent),
                       ),
-                      validator: (val) =>
-                          val!.isEmpty ? 'Enter my child\'s age' : null,
+                      validator: (val) => val!.isEmpty ? 'Enter my child\'s age' : null,
                       onChanged: (val) {
                         setState(() => age = val);
                       },
@@ -124,8 +144,7 @@ class _ChildInputPageState extends State<ChildInputPage> {
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.blueAccent,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 50, vertical: 15),
+                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -133,15 +152,7 @@ class _ChildInputPageState extends State<ChildInputPage> {
                       child: const Text('Submit'),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => HomeScreen(
-                                  // childName: name,
-                                  // childAge: int.parse(age),
-                                  ),
-                            ),
-                          );
+                          submitData();
                         }
                       },
                     ),

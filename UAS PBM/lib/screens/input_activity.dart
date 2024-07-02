@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ActivityInputPage extends StatefulWidget {
   const ActivityInputPage({super.key});
@@ -139,6 +141,47 @@ class _ActivityInputPageState extends State<ActivityInputPage> {
     });
   }
 
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      // Buat map untuk menyimpan data yang akan dikirim ke API
+      Map<String, dynamic> formData = {
+        'childName': childName,
+        'childAge': childAge,
+        'childTemperature': childTemperature,
+        'childCondition': childCondition,
+        'selectedDate': selectedDate.toIso8601String(),
+        'dropOffTime': dropOffTime.format(context),
+        'meals': meals,
+        'bathroomTime': bathroomTime.format(context),
+        'toiletType': toiletType,
+        'toiletCondition': toiletCondition,
+        'activityDescription': activityDescription,
+        'parentNote': parentNote,
+        'feelings': feelings.map((key, value) => MapEntry(key, value.toString())),
+        'itemsNeeded': itemsNeeded.map((key, value) => MapEntry(key, value.toString())),
+        'otherFeeling': otherFeeling,
+        'otherItemNeeded': otherItemNeeded,
+      };
+
+// Kirim data ke API menggunakan HTTP POST
+      final response = await http.post(
+        Uri.parse('https://e7e466ff1ba745979f91354c872c0f5e.api.mockbin.io/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(formData),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Children's activities have been saved")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save data')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,12 +193,11 @@ class _ActivityInputPageState extends State<ActivityInputPage> {
                 fontWeight: FontWeight.w500)),
         backgroundColor: Colors.transparent,
       ),
-      backgroundColor: Color.fromARGB(255, 183, 228, 249),
+      backgroundColor: const Color.fromARGB(255, 183, 228, 249),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
-                'images/screenbg.jpg'), // Ganti dengan path gambar latar belakang Anda
+            image: AssetImage('images/screenbg.jpg'),
             fit: BoxFit.cover,
           ),
         ),
@@ -230,7 +272,7 @@ class _ActivityInputPageState extends State<ActivityInputPage> {
                       ),
                     ),
                     validator: (val) =>
-                        val!.isEmpty ? 'Enter your child\'s temperature' : null,
+                        val!.isEmpty ? 'Enter your child\'s condition' : null,
                     onChanged: (val) {
                       setState(() => childCondition = val);
                     },
@@ -244,202 +286,109 @@ class _ActivityInputPageState extends State<ActivityInputPage> {
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _selectDate(context),
                   ),
-                  ListTile(
-                    title: Text(
-                        "Arrival Time: ${dropOffTime.format(context)}"), // Display drop-off time
-                    trailing: const Icon(Icons.access_time),
-                    onTap: () => _selectTime(
-                        context,
-                        dropOffTime,
-                        (picked) =>
-                            dropOffTime = picked), // Select drop-off time
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Meals',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
                   const SizedBox(height: 10),
-                  ...meals.keys.map((mealType) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          mealType[0].toUpperCase() + mealType.substring(1),
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        TextFormField(
-                          decoration: InputDecoration(
-                            hintText: 'Food',
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                          ),
-                          onChanged: (val) {
-                            setState(() {
-                              meals[mealType]!['food'] = val;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Quantity:'),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: RadioListTile<String>(
-                                    title: const Text('None'),
-                                    value: 'none',
-                                    groupValue: meals[mealType]!['quantity'],
-                                    onChanged: (val) {
-                                      _updateMealQuantity(mealType, val!);
-                                    },
-                                  ),
-                                ),
-                                Expanded(
-                                  child: RadioListTile<String>(
-                                    title: const Text('Some'),
-                                    value: 'some',
-                                    groupValue: meals[mealType]!['quantity'],
-                                    onChanged: (val) {
-                                      _updateMealQuantity(mealType, val!);
-                                    },
-                                  ),
-                                ),
-                                Expanded(
-                                  child: RadioListTile<String>(
-                                    title: const Text('Lots'),
-                                    value: 'lots',
-                                    groupValue: meals[mealType]!['quantity'],
-                                    onChanged: (val) {
-                                      _updateMealQuantity(mealType, val!);
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        TextFormField(
-                          decoration: InputDecoration(
-                            hintText: 'Comments',
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                          ),
-                          onChanged: (val) {
-                            setState(() {
-                              meals[mealType]!['comments'] = val;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    );
-                  }).toList(),
-                  const SizedBox(height: 20),
                   const Text(
-                    'Toilet Time',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.end,
+                    'Drop-off Time',
+                    style: TextStyle(fontSize: 18),
                   ),
                   ListTile(
-                    title: Text(
-                        "Time: ${bathroomTime.format(context)}"), // Display toilet time
+                    title: Text('Selected Time: ${selectedTime.format(context)}'),
                     trailing: const Icon(Icons.access_time),
-                    onTap: () =>
-                        _selectBathroomTime(context), // Select toilet time
+                    onTap: () => _selectTime(context, selectedTime, (picked) {
+                      selectedTime = picked;
+                    }),
                   ),
                   const SizedBox(height: 10),
-                  const Text('Type:', style: TextStyle(fontSize: 18)),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: const Text('Potty'),
-                          value: 'Potty',
-                          groupValue: toiletType,
-                          onChanged: (val) {
-                            setState(() {
-                              toiletType = val!;
-                            });
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: const Text('Diaper'),
-                          value: 'Diaper',
-                          groupValue: toiletType,
-                          onChanged: (val) {
-                            setState(() {
-                              toiletType = val!;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Text('Dry/Wet/BM:', style: TextStyle(fontSize: 18)),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: const Text('Dry'),
-                          value: 'Dry',
-                          groupValue: toiletCondition,
-                          onChanged: (val) {
-                            setState(() {
-                              toiletCondition = val!;
-                            });
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: const Text('Wet'),
-                          value: 'Wet',
-                          groupValue: toiletCondition,
-                          onChanged: (val) {
-                            setState(() {
-                              toiletCondition = val!;
-                            });
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: const Text('BM'),
-                          value: 'BM',
-                          groupValue: toiletCondition,
-                          onChanged: (val) {
-                            setState(() {
-                              toiletCondition = val!;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
                   const Text(
-                    'Activities',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    'Meal Times',
+                    style: TextStyle(fontSize: 18),
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
                     decoration: InputDecoration(
-                      hintText: 'Activities Description',
+                      hintText: 'Breakfast',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        meals['breakfast']!['food'] = val;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      hintText: 'Lunch',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        meals['lunch']!['food'] = val;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      hintText: 'Dinner',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        meals['dinner']!['food'] = val;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      hintText: 'Fluids',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        meals['fluids']!['food'] = val;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Shower Time',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  ListTile(
+                    title: Text('Selected Time: $showerTime'),
+                    trailing: const Icon(Icons.access_time),
+                    onTap: () => _selectTime(context, TimeOfDay.now(), (picked) {
+                      setState(() {
+                        showerTime = picked.format(context);
+                      });
+                    }),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Activity Description',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      hintText: 'Activity Description',
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -450,15 +399,52 @@ class _ActivityInputPageState extends State<ActivityInputPage> {
                       setState(() => activityDescription = val);
                     },
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Note to Parents',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
                   const SizedBox(height: 10),
+                  const Text(
+                    'Feelings',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  Column(
+                    children: feelings.keys.map((String key) {
+                      return CheckboxListTile(
+                        title: Text(key),
+                        value: feelings[key],
+                        onChanged: (bool? value) {
+                          setState(() {
+                            feelings[key] = value!;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  feelings['Other']! ? buildOtherFeelingTextField() : Container(),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Items Needed',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  Column(
+                    children: itemsNeeded.keys.map((String key) {
+                      return CheckboxListTile(
+                        title: Text(key),
+                        value: itemsNeeded[key],
+                        onChanged: (bool? value) {
+                          setState(() {
+                            itemsNeeded[key] = value!;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  itemsNeeded['Other']! ? buildOtherItemNeededTextField() : Container(),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Parent Notes',
+                    style: TextStyle(fontSize: 18),
+                  ),
                   TextFormField(
                     decoration: InputDecoration(
-                      hintText: 'Note',
+                      hintText: 'Parent Notes',
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -469,97 +455,11 @@ class _ActivityInputPageState extends State<ActivityInputPage> {
                       setState(() => parentNote = val);
                     },
                   ),
-                  const SizedBox(height: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Children's Feelings",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      ...feelings.keys.map((String key) {
-                        if (key == 'Other') {
-                          return CheckboxListTile(
-                            title: Text(key),
-                            value: feelings[key],
-                            onChanged: (bool? value) {
-                              setState(() {
-                                feelings[key] = value!;
-                                if (value == true) otherFeeling = '';
-                              });
-                            },
-                          );
-                        }
-                        return CheckboxListTile(
-                          title: Text(key),
-                          value: feelings[key],
-                          onChanged: (bool? value) {
-                            setState(() {
-                              feelings[key] = value!;
-                            });
-                          },
-                        );
-                      }).toList(),
-                      if (feelings['Other'] == true)
-                        buildOtherFeelingTextField(),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Items the Child Needs',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      ...itemsNeeded.keys.map((String key) {
-                        if (key == 'Other') {
-                          return CheckboxListTile(
-                            title: Text(key),
-                            value: itemsNeeded[key],
-                            onChanged: (bool? value) {
-                              setState(() {
-                                itemsNeeded[key] = value!;
-                                if (value == true) otherItemNeeded = '';
-                              });
-                            },
-                          );
-                        }
-                        return CheckboxListTile(
-                          title: Text(key),
-                          value: itemsNeeded[key],
-                          onChanged: (bool? value) {
-                            setState(() {
-                              itemsNeeded[key] = value!;
-                            });
-                          },
-                        );
-                      }).toList(),
-                      if (itemsNeeded['Other'] == true)
-                        buildOtherItemNeededTextField(),
-                    ],
-                  ),
                   const SizedBox(height: 20),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    "Children's activities have been saved")),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 163, 186, 197),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text('Save'),
+                      onPressed: _submitForm,
+                      child: const Text('Submit'),
                     ),
                   ),
                 ],

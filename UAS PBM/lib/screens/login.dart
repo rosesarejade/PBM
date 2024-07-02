@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -36,9 +37,6 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    // const SizedBox(
-                    //   height: 10.0,
-                    // ),
                     Image.asset(
                       'images/tiger2.png',
                       height: 200,
@@ -63,11 +61,9 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon:
-                            const Icon(Icons.email, color: Colors.blueAccent),
+                        prefixIcon: const Icon(Icons.email, color: Colors.blueAccent),
                       ),
-                      validator: (val) =>
-                          val!.isEmpty ? 'Enter your registered email' : null,
+                      validator: (val) => val!.isEmpty ? 'Enter your registered email' : null,
                       onChanged: (val) {
                         setState(() => email = val);
                       },
@@ -78,21 +74,16 @@ class _LoginPageState extends State<LoginPage> {
                         hintText: 'Password',
                         suffix: InkWell(
                             onTap: _tooglePasswordView,
-                            child: Icon(_isHidden
-                                ? Icons.visibility
-                                : Icons.visibility_off)),
+                            child: Icon(_isHidden ? Icons.visibility : Icons.visibility_off)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon:
-                            const Icon(Icons.lock, color: Colors.blueAccent),
+                        prefixIcon: const Icon(Icons.lock, color: Colors.blueAccent),
                       ),
                       obscureText: _isHidden,
-                      validator: (val) => val!.length < 6
-                          ? 'Input a password at least 6 characters'
-                          : null,
+                      validator: (val) => val!.length < 6 ? 'Input a password at least 6 characters' : null,
                       onChanged: (val) {
                         setState(() => password = val);
                       },
@@ -102,8 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.blueAccent,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 50, vertical: 15),
+                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -111,15 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: const Text('Sign In'),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          // Tambahkan log untuk memastikan navigasi dipanggil
-                          if (kDebugMode) {
-                            print('Navigasi ke halaman sesuai peran: $role');
-                          }
-                          Navigator.pushReplacementNamed(
-                              context,
-                              role == 'Caregiver'
-                                  ? '/home_caregiver'
-                                  : '/home_parent');
+                          _login(); // Panggil fungsi login API
                         }
                       },
                     ),
@@ -151,5 +133,36 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isHidden = !_isHidden;
     });
+  }
+
+  Future<void> _login() async {
+    final url = Uri.parse('https://e7e466ff1ba745979f91354c872c0f5e.api.mockbin.io/'); // Ganti dengan endpoint API Anda
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Jika login berhasil
+      final responseData = jsonDecode(response.body);
+      print(responseData);
+      // Navigasi sesuai peran
+      Navigator.pushReplacementNamed(
+          context,
+          role == 'Caregiver'
+              ? '/home_caregiver'
+              : '/home_parent');
+    } else {
+      // Jika login gagal
+      final errorData = jsonDecode(response.body);
+      print('Error during request: $errorData');
+      // Tampilkan pesan error atau lakukan tindakan lain sesuai kebutuhan
+    }
   }
 }
